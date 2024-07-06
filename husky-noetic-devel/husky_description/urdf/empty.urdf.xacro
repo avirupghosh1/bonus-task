@@ -1,0 +1,428 @@
+<?xml version="1.0"?>
+<robot name="husky" xmlns:xacro="http://ros.org/wiki/xacro">
+  <!-- IMU Link -->
+  <xacro:arg name="laser_visual"  default="false"/>
+  <xacro:arg name="camera_visual" default="false"/>
+  <xacro:arg name="imu_visual"    default="false"/>
+  <xacro:arg name="imu_xyz"     default="$(optenv HUSKY_IMU_XYZ 0.19 0 0.149)"/>
+  <xacro:arg name="imu_rpy"     default="$(optenv HUSKY_IMU_RPY 0 -1.5708 3.1416)"/>
+  <xacro:arg name="imu_parent"  default="$(optenv HUSKY_IMU_PARENT base_link)"/>
+   <xacro:property name="r200_cam_rgb_px" value="0.005"/>
+  <xacro:property name="r200_cam_rgb_py" value="0.018"/>
+  <xacro:property name="r200_cam_rgb_pz" value="0.013"/>
+  <xacro:property name="r200_cam_depth_offset" value="0.01"/>
+  <!-- LMS1XX Laser Primary and Secondary -->
+  <xacro:arg name="laser_enabled"           default="$(optenv HUSKY_LMS1XX_ENABLED 0)" />
+  <xacro:arg name="laser_topic"             default="$(optenv HUSKY_LMS1XX_TOPIC front/scan)"/>
+  <xacro:arg name="laser_prefix"            default="$(optenv HUSKY_LMS1XX_PREFIX front)"/>
+  <xacro:arg name="laser_parent"            default="$(optenv HUSKY_LMS1XX_PARENT top_plate_link)"/>
+  <xacro:arg name="laser_xyz"               default="$(optenv HUSKY_LMS1XX_XYZ 0.2206 0.0 0.00635)" />
+  <xacro:arg name="laser_rpy"               default="$(optenv HUSKY_LMS1XX_RPY 0.0 0.0 0.0)" />
+
+  <xacro:arg name="laser_secondary_enabled" default="$(optenv HUSKY_LMS1XX_SECONDARY_ENABLED 0)" />
+  <xacro:arg name="laser_secondary_topic"   default="$(optenv HUSKY_LMS1XX_SECONDARY_TOPIC rear/scan)"/>
+  <xacro:arg name="laser_secondary_prefix"  default="$(optenv HUSKY_LMS1XX_SECONDARY_PREFIX rear)"/>
+  <xacro:arg name="laser_secondary_parent"  default="$(optenv HUSKY_LMS1XX_SECONDARY_PARENT top_plate_link)"/>
+  <xacro:arg name="laser_secondary_xyz"     default="$(optenv HUSKY_LMS1XX_SECONDARY_XYZ -0.2206 0.0 0.00635)" />
+  <xacro:arg name="laser_secondary_rpy"     default="$(optenv HUSKY_LMS1XX_SECONDARY_RPY 0.0 0.0 3.14159)" />
+
+  <!-- UST10 Laser Primary  and Secondary -->
+  <xacro:arg name="laser_ust10_front_enabled" default="$(optenv HUSKY_UST10_ENABLED 1)" />
+  <xacro:arg name="laser_ust10_front_topic"   default="$(optenv HUSKY_UST10_TOPIC /scan)" />
+  <xacro:arg name="laser_ust10_front_prefix"  default="$(optenv HUSKY_UST10_PREFIX front)" />
+  <xacro:arg name="laser_ust10_front_parent"  default="$(optenv HUSKY_UST10_PARENT top_plate_link)" />
+  <xacro:arg name="laser_ust10_front_xyz"     default="$(optenv HUSKY_UST10_XYZ 0.2206 0.0 0.00635)" />
+  <xacro:arg name="laser_ust10_front_rpy"     default="$(optenv HUSKY_UST10_RPY 0 0 0)" />
+
+  <xacro:arg name="laser_ust10_rear_enabled"  default="$(optenv HUSKY_UST10_SECONDARY_ENABLED 0)" />
+  <xacro:arg name="laser_ust10_rear_topic"    default="$(optenv HUSKY_UST10_SECONDARY_TOPIC rear/scan)" />
+  <xacro:arg name="laser_ust10_rear_prefix"   default="$(optenv HUSKY_UST10_SECONDARY_PREFIX rear)" />
+  <xacro:arg name="laser_ust10_rear_parent"   default="$(optenv HUSKY_UST10_SECONDARY_PARENT top_plate_link)" />
+  <xacro:arg name="laser_ust10_rear_xyz"      default="$(optenv HUSKY_UST10_SECONDARY_XYZ -0.2206 0.0 0.00635)" />
+  <xacro:arg name="laser_ust10_rear_rpy"      default="$(optenv HUSKY_UST10_SECONDARY_RPY 0 0 3.14159)" />
+
+  <!-- Velodyne LiDAR Primary and Secondary -->
+  <xacro:arg name="laser_3d_enabled"              default="$(optenv HUSKY_LASER_3D_ENABLED 0)" />
+  <xacro:arg name="laser_3d_topic"                default="$(optenv HUSKY_LASER_3D_TOPIC points)"/>
+  <xacro:arg name="laser_3d_tower"                default="$(optenv HUSKY_LASER_3D_TOWER 1)"/>
+  <xacro:arg name="laser_3d_prefix"               default="$(optenv HUSKY_LASER_3D_PREFIX )"/>
+  <xacro:arg name="laser_3d_parent"               default="$(optenv HUSKY_LASER_3D_PARENT top_plate_link)"/>
+  <xacro:arg name="laser_3d_xyz"                  default="$(optenv HUSKY_LASER_3D_XYZ 0 0 0)" />
+  <xacro:arg name="laser_3d_rpy"                  default="$(optenv HUSKY_LASER_3D_RPY 0 0 0)" />
+
+  <xacro:arg name="laser_3d_secondary_enabled"    default="$(optenv HUSKY_LASER_3D_SECONDARY_ENABLED 0)" />
+  <xacro:arg name="laser_3d_secondary_topic"      default="$(optenv HUSKY_LASER_3D_SECONDARY_TOPIC secondary_points)"/>
+  <xacro:arg name="laser_3d_secondary_tower"      default="$(optenv HUSKY_LASER_3D_SECONDARY_TOWER 1)"/>
+  <xacro:arg name="laser_3d_secondary_prefix"     default="$(optenv HUSKY_LASER_3D_SECONDARY_PREFIX secondary_)"/>
+  <xacro:arg name="laser_3d_secondary_parent"     default="$(optenv HUSKY_LASER_3D_SECONDARY_PARENT top_plate_link)"/>
+  <xacro:arg name="laser_3d_secondary_xyz"        default="$(optenv HUSKY_LASER_3D_SECONDARY_XYZ 0 0 0)" />
+  <xacro:arg name="laser_3d_secondary_rpy"        default="$(optenv HUSKY_LASER_3D_SECONDARY_RPY 0 0 -3.14159)" />
+
+  <!-- RealSense Camera Primary and Secondary -->
+  <xacro:arg name="realsense_enabled"             default="$(optenv HUSKY_REALSENSE_ENABLED 1)" />
+  <xacro:arg name="realsense_topic"               default="$(optenv HUSKY_REALSENSE_TOPIC realsense)" />
+  <xacro:arg name="realsense_prefix"              default="$(optenv HUSKY_REALSENSE_PREFIX camera)" />
+  <xacro:arg name="realsense_parent"              default="$(optenv HUSKY_REALSENSE_PARENT top_plate_link)" />
+  <xacro:arg name="realsense_xyz"                 default="$(optenv HUSKY_REALSENSE_XYZ 0 0 0)" />
+  <xacro:arg name="realsense_rpy"                 default="$(optenv HUSKY_REALSENSE_RPY 0 0 0)" />
+
+  <xacro:arg name="realsense_secondary_enabled"   default="$(optenv HUSKY_REALSENSE_SECONDARY_ENABLED 0)" />
+  <xacro:arg name="realsense_secondary_topic"     default="$(optenv HUSKY_REALSENSE_SECONDARY_TOPIC realsense_secondary)" />
+  <xacro:arg name="realsense_secondary_prefix"    default="$(optenv HUSKY_REALSENSE_SECONDARY_PREFIX camera_secondary)" />
+  <xacro:arg name="realsense_secondary_parent"    default="$(optenv HUSKY_REALSENSE_SECONDARY_PARENT top_plate_link)" />
+  <xacro:arg name="realsense_secondary_xyz"       default="$(optenv HUSKY_REALSENSE_SECONDARY_XYZ 0 0 0)" />
+  <xacro:arg name="realsense_secondary_rpy"       default="$(optenv HUSKY_REALSENSE_SECONDARY_RPY 0 0 0)" />
+
+  <!-- BlackflyS Camera Primary and Secondary -->
+  <xacro:arg name="blackfly_enabled"                  default="$(optenv HUSKY_BLACKFLY 1)"/>
+  <xacro:arg name="blackfly_mount_enabled"            default="$(optenv HUSKY_BLACKFLY_MOUNT_ENABLED 1)"/>
+  <xacro:arg name="blackfly_mount_angle"              default="$(optenv HUSKY_BLACKFLY_MOUNT_ANGLE 0)"/>
+  <xacro:arg name="blackfly_prefix"                   default="$(optenv HUSKY_BLACKFLY_PREFIX blackfly)"/>
+  <xacro:arg name="blackfly_parent"                   default="$(optenv HUSKY_BLACKFLY_PARENT top_plate_link)"/>
+  <xacro:arg name="blackfly_xyz"                      default="$(optenv HUSKY_BLACKFLY_XYZ 0 0 0)"/>
+  <xacro:arg name="blackfly_rpy"                      default="$(optenv HUSKY_BLACKFLY_RPY 0 0 0)"/>
+
+  <xacro:arg name="blackfly_secondary_enabled"        default="$(optenv HUSKY_BLACKFLY_SECONDARY 0)"/>
+  <xacro:arg name="blackfly_secondary_mount_enabled"  default="$(optenv HUSKY_BLACKFLY_SECONDARY_MOUNT_ENABLED 1)"/>
+  <xacro:arg name="blackfly_secondary_mount_angle"    default="$(optenv HUSKY_BLACKFLY_SECONDARY_MOUNT_ANGLE 0)"/>
+  <xacro:arg name="blackfly_secondary_prefix"         default="$(optenv HUSKY_BLACKFLY_SECONDARY_PREFIX blackfly_secondary)"/>
+  <xacro:arg name="blackfly_secondary_parent"         default="$(optenv HUSKY_BLACKFLY_SECONDARY_PARENT top_plate_link)"/>
+  <xacro:arg name="blackfly_secondary_xyz"            default="$(optenv HUSKY_BLACKFLY_SECONDARY_XYZ 0 0 0)"/>
+  <xacro:arg name="blackfly_secondary_rpy"            default="$(optenv HUSKY_BLACKFLY_SECONDARY_RPY 0 0 0)"/>
+
+  <!-- Bumper Extension -->
+  <xacro:property name="husky_front_bumper_extend"  value="$(optenv HUSKY_FRONT_BUMPER_EXTEND 1)" />
+  <xacro:property name="husky_rear_bumper_extend"   value="$(optenv HUSKY_REAR_BUMPER_EXTEND 1)" />
+
+  <!-- Height of the sensor arch in mm.  Must be either 510 or 300 -->
+  <xacro:arg name="sensor_arch"         default="$(optenv HUSKY_SENSOR_ARCH 0)" />
+  <xacro:arg name="sensor_arch_height"  default="$(optenv HUSKY_SENSOR_ARCH_HEIGHT 510)" />
+  <xacro:arg name="sensor_arch_xyz"     default="$(optenv HUSKY_SENSOR_ARCH_OFFSET 0 0 0)"/>
+  <xacro:arg name="sensor_arch_rpy"     default="$(optenv HUSKY_SENSOR_ARCH_RPY 0 0 0)"/>
+
+  <!-- Extras -->
+  <xacro:arg name="robot_namespace" default="$(optenv ROBOT_NAMESPACE /)" />
+  <xacro:arg name="urdf_extras"     default="$(optenv HUSKY_URDF_EXTRAS empty.urdf)" />
+  <xacro:arg name="cpr_urdf_extras" default="$(optenv CPR_URDF_EXTRAS empty.urdf)" />
+
+  <!-- Included URDF/XACRO Files -->
+  <xacro:include filename="$(find husky_description)/urdf/accessories/hokuyo_ust10.urdf.xacro" />
+  <xacro:include filename="$(find husky_description)/urdf/accessories/intel_realsense.urdf.xacro"/>
+  <xacro:include filename="$(find husky_description)/urdf/accessories/flir_blackfly_mount.urdf.xacro"/>
+  <xacro:include filename="$(find husky_description)/urdf/accessories/sensor_arch.urdf.xacro"/>
+  <xacro:include filename="$(find husky_description)/urdf/accessories/sick_lms1xx_mount.urdf.xacro"/>
+  <xacro:include filename="$(find husky_description)/urdf/accessories/vlp16_mount.urdf.xacro"/>
+  <xacro:include filename="$(find husky_description)/urdf/decorations.urdf.xacro" />
+  <xacro:include filename="$(find husky_description)/urdf/wheel.urdf.xacro" />
+
+  <xacro:property name="M_PI" value="3.14159"/>
+
+  <!-- Base Size -->
+  <xacro:property name="base_x_size" value="0.98740000" />
+  <xacro:property name="base_y_size" value="0.57090000" />
+  <xacro:property name="base_z_size" value="0.24750000" />
+
+  <!-- Wheel Mounting Positions -->
+  <xacro:property name="wheelbase" value="0.5120" />
+  <xacro:property name="track" value="0.5708" />
+  <xacro:property name="wheel_vertical_offset" value="0.03282" />
+
+  <!-- Wheel Properties -->
+  <xacro:property name="wheel_length" value="0.1143" />
+  <xacro:property name="wheel_radius" value="0.1651" />
+
+  <!-- Base link is the center of the robot's bottom plate -->
+  <link name="base_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://husky_description/meshes/base_link.dae" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="${( husky_front_bumper_extend - husky_rear_bumper_extend ) / 2.0} 0 ${base_z_size/4}" rpy="0 0 0" />
+      <geometry>
+        <box size="${ base_x_size + husky_front_bumper_extend + husky_rear_bumper_extend } ${base_y_size} ${base_z_size/2}"/>
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 ${base_z_size*3/4-0.01}" rpy="0 0 0" />
+      <geometry>
+        <box size="${base_x_size*4/5} ${base_y_size} ${base_z_size/2-0.02}"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- Base footprint is on the ground under the robot -->
+  <link name="base_footprint"/>
+
+  <joint name="base_footprint_joint" type="fixed">
+    <origin xyz="0 0 ${wheel_vertical_offset - wheel_radius}" rpy="0 0 0" />
+    <parent link="base_link" />
+    <child link="base_footprint" />
+  </joint>
+
+  <!-- Inertial link stores the robot's inertial information -->
+  <link name="inertial_link">
+    <inertial>
+      <mass value="46.034" />
+      <origin xyz="-0.00065 -0.085 0.062" />
+      <inertia ixx="0.6022" ixy="-0.02364" ixz="-0.1197" iyy="1.7386" iyz="-0.001544" izz="2.0296" />
+    </inertial>
+  </link>
+
+  <joint name="inertial_joint" type="fixed">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <parent link="base_link" />
+    <child link="inertial_link" />
+  </joint>
+
+  <!-- Husky wheel macros -->
+  <xacro:husky_wheel wheel_prefix="front_left">
+    <origin xyz="${wheelbase/2} ${track/2} ${wheel_vertical_offset}" rpy="0 0 0" />
+  </xacro:husky_wheel>
+  <xacro:husky_wheel wheel_prefix="front_right">
+    <origin xyz="${wheelbase/2} ${-track/2} ${wheel_vertical_offset}" rpy="0 0 0" />
+  </xacro:husky_wheel>
+  <xacro:husky_wheel wheel_prefix="rear_left">
+    <origin xyz="${-wheelbase/2} ${track/2} ${wheel_vertical_offset}" rpy="0 0 0" />
+  </xacro:husky_wheel>
+  <xacro:husky_wheel wheel_prefix="rear_right">
+    <origin xyz="${-wheelbase/2} ${-track/2} ${wheel_vertical_offset}" rpy="0 0 0" />
+  </xacro:husky_wheel>
+
+  <!-- Husky Decorations -->
+  <xacro:husky_decorate />
+
+  <!--
+    Add the main sensor arch if the user has specifically enabled it, or if a sensor
+    requires it for mounting
+  -->
+  <xacro:if value="$(arg sensor_arch)">
+    <xacro:sensor_arch prefix="" parent="top_plate_link" size="$(arg sensor_arch_height)">
+      <origin xyz="$(arg sensor_arch_xyz)" rpy="$(arg sensor_arch_rpy)"/>
+    </xacro:sensor_arch>
+  </xacro:if>
+
+  <!--
+      IMU Link: Standard location to add an IMU (i.e. UM7 or Microstrain)
+  -->
+  <link name="imu_link"/>
+  <joint name="imu_joint" type="fixed">
+    <origin xyz="$(arg imu_xyz)" rpy="$(arg imu_rpy)" />
+    <parent link="$(arg imu_parent)" />
+    <child link="imu_link" />
+  </joint>
+  <gazebo reference="imu_link">
+  </gazebo>
+
+      <joint name="scan_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="base_scan"/>
+    <origin xyz="-0.064 0 0.122" rpy="0 0 0"/>
+  </joint>
+
+  <link name="base_scan">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://turtlebot3_description/meshes/sensors/lds.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="dark"/>
+    </visual>
+
+    <collision>
+      <origin xyz="0.015 0 -0.0065" rpy="0 0 0"/>
+      <geometry>
+        <cylinder length="0.0315" radius="0.055"/>
+      </geometry>
+    </collision>
+
+    <inertial>
+      <mass value="0.114" />
+      <origin xyz="0 0 0" />
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0"
+               iyy="0.001" iyz="0.0"
+               izz="0.001" />
+    </inertial>
+  </link>
+
+  <joint name="camera_joint" type="fixed">
+    <origin xyz="0.064 -0.065 0.094" rpy="0 0 0"/>
+    <parent link="base_link"/>
+    <child link="camera_link"/>
+  </joint>
+
+  <link name="camera_link">
+    <visual>
+     <origin xyz="0 0 0" rpy="1.57 0 1.57"/>
+      <geometry>
+       <mesh filename="package://turtlebot3_description/meshes/sensors/r200.dae" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0.003 0.065 0.007" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.012 0.132 0.020"/>
+      </geometry>
+    </collision>
+
+    <!-- This inertial field needs doesn't contain reliable data!! -->
+<!--   <inertial>
+      <mass value="0.564" />
+      <origin xyz="0 0 0" />
+      <inertia ixx="0.003881243" ixy="0.0" ixz="0.0"
+               iyy="0.000498940" iyz="0.0"
+               izz="0.003879257" />
+    </inertial>-->
+  </link>
+
+  <joint name="camera_rgb_joint" type="fixed">
+    <origin xyz="${r200_cam_rgb_px} ${r200_cam_rgb_py} ${r200_cam_rgb_pz}" rpy="0 0 0"/>
+    <parent link="camera_link"/>
+    <child link="camera_rgb_frame"/>
+  </joint>
+  <link name="camera_rgb_frame"/>
+
+  <joint name="camera_rgb_optical_joint" type="fixed">
+    <origin xyz="0 0 0" rpy="-1.57 0 -1.57"/>
+    <parent link="camera_rgb_frame"/>
+    <child link="camera_rgb_optical_frame"/>
+  </joint>
+  <link name="camera_rgb_optical_frame"/>
+
+  <joint name="camera_depth_joint" type="fixed">
+    <origin xyz="${r200_cam_rgb_px} ${r200_cam_rgb_py + r200_cam_depth_offset} ${r200_cam_rgb_pz}" rpy="0 0 0"/>
+    <parent link="camera_link"/>
+    <child link="camera_depth_frame"/>
+  </joint>
+  <link name="camera_depth_frame"/>
+
+  <joint name="camera_depth_optical_joint" type="fixed">
+    <origin xyz="0 0 0" rpy="-1.57 0 -1.57"/>
+    <parent link="camera_depth_frame"/>
+    <child link="camera_depth_optical_frame"/>
+  </joint>
+  <link name="camera_depth_optical_frame"/>
+
+  <gazebo>
+    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+      <robotNamespace>$(arg robot_namespace)</robotNamespace>
+      <legacyModeNS>true</legacyModeNS>
+    </plugin>
+  </gazebo>
+
+  <gazebo>
+    <plugin name="imu_controller" filename="libhector_gazebo_ros_imu.so">
+      <robotNamespace>$(arg robot_namespace)</robotNamespace>
+      <updateRate>50.0</updateRate>
+      <bodyName>base_link</bodyName>
+      <topicName>imu/data</topicName>
+      <accelDrift>0.005 0.005 0.005</accelDrift>
+      <accelGaussianNoise>0.005 0.005 0.005</accelGaussianNoise>
+      <rateDrift>0.005 0.005 0.005 </rateDrift>
+      <rateGaussianNoise>0.005 0.005 0.005 </rateGaussianNoise>
+      <headingDrift>0.005</headingDrift>
+      <headingGaussianNoise>0.005</headingGaussianNoise>
+    </plugin>
+  </gazebo>
+
+  <gazebo>
+    <plugin name="gps_controller" filename="libhector_gazebo_ros_gps.so">
+      <robotNamespace>$(arg robot_namespace)</robotNamespace>
+      <updateRate>40</updateRate>
+      <bodyName>base_link</bodyName>
+      <frameId>base_link</frameId>
+      <topicName>navsat/fix</topicName>
+      <velocityTopicName>navsat/vel</velocityTopicName>
+      <referenceLatitude>49.9</referenceLatitude>
+      <referenceLongitude>8.9</referenceLongitude>
+      <referenceHeading>0</referenceHeading>
+      <referenceAltitude>0</referenceAltitude>
+      <drift>0.0001 0.0001 0.0001</drift>
+    </plugin>
+  </gazebo>
+   <gazebo reference="base_scan">
+    <material>Gazebo/FlatBlack</material>
+    <sensor type="ray" name="lds_lfcd_sensor">
+      <pose>0 0 0 0 0 0</pose>
+      <visualize>$(arg laser_visual)</visualize>
+      <update_rate>5</update_rate>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>360</samples>
+            <resolution>1</resolution>
+            <min_angle>0.0</min_angle>
+            <max_angle>6.28319</max_angle>
+          </horizontal>
+        </scan>
+        <range>
+          <min>0.120</min>
+          <max>3.5</max>
+          <resolution>0.015</resolution>
+        </range>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.01</stddev>
+        </noise>
+      </ray>
+      <plugin name="gazebo_ros_lds_lfcd_controller" filename="libgazebo_ros_laser.so">
+        <topicName>scan</topicName>
+        <frameName>base_scan</frameName>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <gazebo reference="camera_rgb_frame">
+    <sensor type="depth" name="realsense_R200">
+      <always_on>true</always_on>
+      <visualize>$(arg camera_visual)</visualize>
+      <camera>
+          <horizontal_fov>1.3439</horizontal_fov>
+          <image>
+              <width>1920</width>
+              <height>1080</height>
+              <format>R8G8B8</format>
+          </image>
+          <depth_camera></depth_camera>
+          <clip>
+              <near>0.03</near>
+              <far>100</far>
+          </clip>
+      </camera>
+      <plugin name="camera_controller" filename="libgazebo_ros_openni_kinect.so">
+        <baseline>0.2</baseline>
+        <alwaysOn>true</alwaysOn>
+        <updateRate>30.0</updateRate>
+        <cameraName>camera</cameraName>
+        <frameName>camera_rgb_optical_frame</frameName>
+        <imageTopicName>rgb/image_raw</imageTopicName>
+        <depthImageTopicName>depth/image_raw</depthImageTopicName>
+        <pointCloudTopicName>depth/points</pointCloudTopicName>
+        <cameraInfoTopicName>rgb/camera_info</cameraInfoTopicName>
+        <depthImageCameraInfoTopicName>depth/camera_info</depthImageCameraInfoTopicName>
+        <pointCloudCutoff>0.4</pointCloudCutoff>
+            <hackBaseline>0.07</hackBaseline>
+            <distortionK1>0.0</distortionK1>
+            <distortionK2>0.0</distortionK2>
+            <distortionK3>0.0</distortionK3>
+            <distortionT1>0.0</distortionT1>
+            <distortionT2>0.0</distortionT2>
+        <CxPrime>0.0</CxPrime>
+        <Cx>0.0</Cx>
+        <Cy>0.0</Cy>
+        <focalLength>0</focalLength>
+        <hackBaseline>0</hackBaseline>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <!-- Optional custom includes. -->
+  <xacro:include filename="$(arg urdf_extras)" />
+
+  <!-- Optional for Clearpath internal softwares -->
+  <xacro:include filename="$(arg cpr_urdf_extras)" />
+
+</robot>
