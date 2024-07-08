@@ -40,8 +40,9 @@ for more reference about robot launch the another rviz (not necessery might rest
 ```bash
    roslaunch husky_viz view_robot.launch
    ```
-
+- yt video link [here](https://youtu.be/q7hdtr1TbUM)
 There are also several launch files like gmapping_demo , exploration_demo these launch the move_base launch file with global and local planners but here with out a static map it might be useless move the robot with the teleop to get a octomap or elevation_map more about both of them are here-
+
 ## Acknowledgements
 
  - [elevation mapping_used(ANYbotics)](https://github.com/ANYbotics/elevation_mapping)
